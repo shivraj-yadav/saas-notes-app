@@ -91,7 +91,7 @@ export default function NoteModal({ isOpen, onClose, onSave, editingNote }: Note
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
-            {isEditing ? 'Edit Note' : 'Create New Note'}
+            {isEditing ? '✏️ Edit Note' : '📝 Create New Note'}
           </h2>
           <button
             onClick={handleClose}

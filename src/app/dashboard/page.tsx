@@ -91,9 +91,15 @@ export default function DashboardPage() {
   };
 
   const handleDeleteNote = async (noteId: string) => {
+    if (!confirm('Are you sure you want to delete this note?')) {
+      return;
+    }
+    
     try {
       await deleteNote(noteId);
-      setNotes(notes.filter(note => note.id !== noteId));
+      // Refresh notes from server to ensure consistency
+      const updatedNotes = await getNotes();
+      setNotes(updatedNotes);
       toast.success('Note deleted successfully');
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -345,16 +351,20 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Create/Edit Note Modal */}
-      <NoteModal
-        isOpen={showCreateModal || !!editingNote}
-        onClose={() => {
-          setShowCreateModal(false);
-          setEditingNote(null);
-        }}
-        onSave={handleSaveNote}
-        editingNote={editingNote}
-      />
+      {/* Create/Edit Note Modal - Force Re-render */}
+      {(showCreateModal || editingNote) && (
+        <div key={editingNote?.id || 'new'}>
+          <NoteModal
+            isOpen={true}
+            onClose={() => {
+              setShowCreateModal(false);
+              setEditingNote(null);
+            }}
+            onSave={handleSaveNote}
+            editingNote={editingNote}
+          />
+        </div>
+      )}
     </div>
   );
 }
