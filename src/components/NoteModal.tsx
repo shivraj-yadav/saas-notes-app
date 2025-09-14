@@ -177,3 +177,5 @@ export default function NoteModal({ isOpen, onClose, onSave, editingNote }: Note
     </div>
   );
 }
+
+export default NoteModal;
