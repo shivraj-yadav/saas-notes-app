@@ -13,8 +13,7 @@ import {
   LogOut, 
   Edit, 
   Trash2,
-  Calendar,
-  Filter
+  Calendar
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -56,7 +55,7 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingNote, setEditingNote] = useState<any>(null);
+  const [editingNote, setEditingNote] = useState<typeof mockNotes[0] | null>(null);
 
   const filteredNotes = notes.filter(note =>
     note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

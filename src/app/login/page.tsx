@@ -52,7 +52,7 @@ export default function LoginPage() {
       } else {
         toast.error('Invalid credentials. Please check your email and password.');
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
