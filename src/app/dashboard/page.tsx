@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Note, getNotes, deleteNote, createNote, updateNote } from '../../../lib/notes';
-import NoteModal from '../../components/NoteModal';
+// import NoteModal from '../../components/NoteModal'; // Removed - using inline modal
 
 interface User {
   id: string;
@@ -351,28 +351,28 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Create/Edit Note Modal */}
+      {/* NEW WORKING MODAL - FORCE CACHE REFRESH */}
       {(showCreateModal || editingNote) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">
-                🚀 WORKING MODAL - {editingNote ? 'Edit Note' : 'Create New Note'}
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[9999]" style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden border-4 border-blue-500">
+            {/* NEW HEADER */}
+            <div className="flex items-center justify-between p-8 border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <h2 className="text-2xl font-bold text-blue-900">
+                ✨ NEW MODAL ✨ {editingNote ? 'EDIT YOUR NOTE' : 'CREATE NEW NOTE'}
               </h2>
               <button
                 onClick={() => {
                   setShowCreateModal(false);
                   setEditingNote(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-red-500 hover:text-red-700 text-3xl font-bold"
               >
-                ✕
+                ❌
               </button>
             </div>
 
-            {/* Form */}
-            <form className="p-6 space-y-6" onSubmit={(e) => {
+            {/* NEW FORM */}
+            <form className="p-8 space-y-8 bg-gray-50" onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
               const title = formData.get('title') as string;
@@ -406,55 +406,55 @@ export default function DashboardPage() {
                 });
               }
             }}>
-              {/* Title Input */}
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                  Title
+              {/* NEW TITLE INPUT */}
+              <div className="bg-white p-6 rounded-lg border-2 border-blue-200">
+                <label htmlFor="title" className="block text-lg font-bold text-blue-800 mb-3">
+                  📝 NOTE TITLE
                 </label>
                 <input
                   name="title"
                   type="text"
                   id="title"
                   defaultValue={editingNote?.title || ''}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter note title..."
+                  className="w-full px-6 py-4 border-2 border-blue-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 text-lg"
+                  placeholder="🎯 Enter your amazing note title here..."
                   required
                 />
               </div>
 
-              {/* Content Textarea */}
-              <div>
-                <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                  Content
+              {/* NEW CONTENT TEXTAREA */}
+              <div className="bg-white p-6 rounded-lg border-2 border-green-200">
+                <label htmlFor="content" className="block text-lg font-bold text-green-800 mb-3">
+                  📄 NOTE CONTENT
                 </label>
                 <textarea
                   name="content"
                   id="content"
-                  rows={12}
+                  rows={15}
                   defaultValue={editingNote?.content || ''}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                  placeholder="Write your note content here..."
+                  className="w-full px-6 py-4 border-2 border-green-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 resize-none text-lg"
+                  placeholder="✍️ Write your brilliant note content here..."
                   required
                 />
               </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              {/* NEW ACTIONS */}
+              <div className="flex justify-end gap-6 pt-6 border-t-4 border-purple-200">
                 <button
                   type="button"
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingNote(null);
                   }}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-8 py-4 text-xl font-bold text-red-600 border-2 border-red-300 rounded-xl hover:bg-red-50"
                 >
-                  Cancel
+                  ❌ Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 flex items-center gap-3 text-xl font-bold"
                 >
-                  💾 {editingNote ? 'Update Note' : 'Create Note'}
+                  🚀 {editingNote ? 'UPDATE NOTE' : 'CREATE NOTE'}
                 </button>
               </div>
             </form>
