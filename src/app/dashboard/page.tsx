@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FileText, 
@@ -13,57 +13,69 @@ import {
   LogOut, 
   Edit, 
   Trash2,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Note, getNotes, deleteNote } from '../../../lib/notes';
+import NoteModal from '../../components/NoteModal';
 
-// Mock data for demonstration
-const mockUser = {
-  name: 'John Doe',
-  email: 'admin@acme.test',
-  role: 'Admin',
-  tenant: 'Acme Corporation',
-  subscription: 'Free', // or 'Pro'
-};
-
-const mockNotes = [
-  {
-    id: '1',
-    title: 'Project Planning',
-    content: 'Initial planning for the new SaaS platform...',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-15',
-  },
-  {
-    id: '2',
-    title: 'Meeting Notes',
-    content: 'Discussion about multi-tenant architecture...',
-    createdAt: '2024-01-14',
-    updatedAt: '2024-01-14',
-  },
-  {
-    id: '3',
-    title: 'Feature Requirements',
-    content: 'List of features needed for MVP...',
-    createdAt: '2024-01-13',
-    updatedAt: '2024-01-13',
-  },
-];
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  tenant: {
+    id: string;
+    name: string;
+    subscriptionPlan: string;
+  };
+}
 
 export default function DashboardPage() {
-  const [notes, setNotes] = useState(mockNotes);
+  const [user, setUser] = useState<User | null>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingNote, setEditingNote] = useState<typeof mockNotes[0] | null>(null);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const filteredNotes = notes.filter(note =>
-    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  // Fetch user data and notes on component mount
+  useEffect(() => {
+    const fetchUserAndNotes = async () => {
+      try {
+        // Fetch current user
+        const userResponse = await fetch('/api/auth/me');
+        if (!userResponse.ok) {
+          window.location.href = '/login';
+          return;
+        }
+        const userData = await userResponse.json();
+        setUser(userData.user);
+
+        // Fetch notes
+        const notesData = await getNotes();
+        setNotes(notesData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAndNotes();
+  }, []);
+
+  // Search notes (client-side filtering for now)
+  const filteredNotes = notes.filter((note: Note) =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    note.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreateNote = () => {
-    if (mockUser.subscription === 'Free' && notes.length >= 3) {
+    if (user?.tenant.subscriptionPlan === 'free' && notes.length >= 3) {
       toast.error('Free plan limit reached! Upgrade to Pro for unlimited notes.');
       return;
     }
@@ -71,17 +83,65 @@ export default function DashboardPage() {
   };
 
   const handleUpgrade = () => {
-    if (mockUser.role !== 'Admin') {
+    if (user?.role !== 'admin') {
       toast.error('Only admins can upgrade the subscription.');
       return;
     }
     toast.success('Upgrade feature will be available in Module 7!');
   };
 
-  const handleDeleteNote = (noteId: string) => {
-    setNotes(notes.filter(note => note.id !== noteId));
-    toast.success('Note deleted successfully');
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      await deleteNote(noteId);
+      setNotes(notes.filter(note => note.id !== noteId));
+      toast.success('Note deleted successfully');
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast.error('Failed to delete note');
+    }
   };
+
+  const handleSaveNote = (savedNote: Note) => {
+    if (editingNote) {
+      // Update existing note
+      setNotes(notes.map(note => note.id === savedNote.id ? savedNote : note));
+    } else {
+      // Add new note
+      setNotes([savedNote, ...notes]);
+    }
+    setShowCreateModal(false);
+    setEditingNote(null);
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+    setShowCreateModal(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = '/login';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+          <span className="text-gray-600">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -94,9 +154,9 @@ export default function DashboardPage() {
               <span className="text-xl font-bold text-gray-900">NotesApp</span>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
-              <span className="text-sm text-gray-600">{mockUser.tenant}</span>
+              <span className="text-sm text-gray-600">{user.tenant.name}</span>
               <div className={`w-2 h-2 rounded-full ${
-                mockUser.subscription === 'Pro' ? 'bg-green-500' : 'bg-yellow-500'
+                user.tenant.subscriptionPlan === 'pro' ? 'bg-green-500' : 'bg-yellow-500'
               }`} />
             </div>
           </div>
@@ -104,7 +164,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             {/* Subscription Status */}
             <div className="hidden md:flex items-center gap-2">
-              {mockUser.subscription === 'Free' && (
+              {user.tenant.subscriptionPlan === 'free' && (
                 <button
                   onClick={handleUpgrade}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
@@ -114,24 +174,28 @@ export default function DashboardPage() {
                 </button>
               )}
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                mockUser.subscription === 'Pro' 
+                user.tenant.subscriptionPlan === 'pro' 
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-yellow-100 text-yellow-800'
               }`}>
-                {mockUser.subscription} Plan
+                {user.tenant.subscriptionPlan === 'pro' ? 'Pro' : 'Free'} Plan
               </span>
             </div>
 
             {/* User Menu */}
             <div className="flex items-center gap-3">
               <div className="hidden md:block text-right">
-                <p className="text-sm font-medium text-gray-900">{mockUser.name}</p>
-                <p className="text-xs text-gray-500">{mockUser.role}</p>
+                <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                <p className="text-xs text-gray-500">{user.role === 'admin' ? 'Admin' : 'Member'}</p>
               </div>
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                 <User className="h-5 w-5 text-white" />
               </div>
-              <button className="text-gray-400 hover:text-gray-600">
+              <button 
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-gray-600"
+                title="Logout"
+              >
                 <LogOut className="h-5 w-5" />
               </button>
             </div>
@@ -151,7 +215,7 @@ export default function DashboardPage() {
             My Notes
           </motion.h1>
           <p className="text-gray-600">
-            {mockUser.subscription === 'Free' 
+            {user.tenant.subscriptionPlan === 'free' 
               ? `${notes.length}/3 notes used • Upgrade to Pro for unlimited notes`
               : 'Unlimited notes available'
             }
@@ -166,8 +230,8 @@ export default function DashboardPage() {
             <input
               type="text"
               placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -207,15 +271,15 @@ export default function DashboardPage() {
           >
             <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-gray-900 mb-2">
-              {searchQuery ? 'No notes found' : 'No notes yet'}
+              {searchTerm ? 'No notes found' : 'No notes yet'}
             </h3>
             <p className="text-gray-500 mb-6">
-              {searchQuery 
+              {searchTerm 
                 ? 'Try adjusting your search terms'
                 : 'Create your first note to get started'
               }
             </p>
-            {!searchQuery && (
+            {!searchTerm && (
               <button
                 onClick={handleCreateNote}
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -245,15 +309,17 @@ export default function DashboardPage() {
                     {note.title}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setEditingNote(note)}
-                      className="text-gray-400 hover:text-blue-600 p-1"
+                    <button
+                      onClick={() => handleEditNote(note)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit note"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleDeleteNote(note.id)}
-                      className="text-gray-400 hover:text-red-600 p-1"
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete note"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -279,34 +345,16 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Create/Edit Modal Placeholder */}
-      {(showCreateModal || editingNote) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg p-6 w-full max-w-2xl"
-          >
-            <h2 className="text-xl font-semibold mb-4">
-              {editingNote ? 'Edit Note' : 'Create New Note'}
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Note creation and editing functionality will be implemented in the next steps!
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setEditingNote(null);
-                }}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Close
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      {/* Create/Edit Note Modal */}
+      <NoteModal
+        isOpen={showCreateModal || !!editingNote}
+        onClose={() => {
+          setShowCreateModal(false);
+          setEditingNote(null);
+        }}
+        onSave={handleSaveNote}
+        editingNote={editingNote}
+      />
     </div>
   );
 }
