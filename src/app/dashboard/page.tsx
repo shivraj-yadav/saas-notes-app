@@ -521,7 +521,7 @@ export default function DashboardPage() {
       {/* NEW WORKING MODAL - FORCE CACHE REFRESH */}
       {(showCreateModal || editingNote) && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[9999]" style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden border-4 border-blue-500">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border-4 border-blue-500 flex flex-col">
             {/* NEW HEADER */}
             <div className="flex items-center justify-between p-8 border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <h2 className="text-2xl font-bold text-blue-900">
@@ -538,93 +538,95 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            {/* NEW FORM */}
-            <form className="p-8 space-y-8 bg-gray-50" onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              const title = formData.get('title') as string;
-              const content = formData.get('content') as string;
-              
-              if (!title || !content) {
-                toast.error('Please fill in all fields');
-                return;
-              }
+            {/* FORM CONTENT */}
+            <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+              <form className="space-y-6" onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const title = formData.get('title') as string;
+                const content = formData.get('content') as string;
+                
+                if (!title || !content) {
+                  toast.error('Please fill in all fields');
+                  return;
+                }
 
-              // Handle save
-              if (editingNote) {
-                // Update note
-                updateNote(editingNote.id, { title, content }).then((updatedNote) => {
-                  setNotes(notes.map(note => note.id === updatedNote.id ? updatedNote : note));
-                  setShowCreateModal(false);
-                  setEditingNote(null);
-                  toast.success('Note updated successfully');
-                }).catch((error) => {
-                  toast.error('Failed to update note');
-                });
-              } else {
-                // Create note
-                createNote({ title, content }).then((newNote) => {
-                  setNotes([newNote, ...notes]);
-                  setShowCreateModal(false);
-                  setEditingNote(null);
-                  toast.success('Note created successfully');
-                }).catch((error) => {
-                  toast.error('Failed to create note');
-                });
-              }
-            }}>
-              {/* NEW TITLE INPUT */}
-              <div className="bg-white p-6 rounded-lg border-2 border-blue-200">
-                <label htmlFor="title" className="block text-lg font-bold text-blue-800 mb-3">
-                  📝 NOTE TITLE
-                </label>
-                <input
-                  name="title"
-                  type="text"
-                  id="title"
-                  defaultValue={editingNote?.title || ''}
-                  className="w-full px-6 py-4 border-2 border-blue-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 text-lg"
-                  placeholder="🎯 Enter your amazing note title here..."
-                  required
-                />
-              </div>
-
-              {/* NEW CONTENT TEXTAREA */}
-              <div className="bg-white p-6 rounded-lg border-2 border-green-200">
-                <label htmlFor="content" className="block text-lg font-bold text-green-800 mb-3">
-                  📄 NOTE CONTENT
-                </label>
-                <textarea
-                  name="content"
-                  id="content"
-                  rows={15}
-                  defaultValue={editingNote?.content || ''}
-                  className="w-full px-6 py-4 border-2 border-green-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 resize-none text-lg"
-                  placeholder="✍️ Write your brilliant note content here..."
-                  required
-                />
-              </div>
-
-              {/* NEW ACTIONS */}
-              <div className="flex justify-end gap-6 pt-6 border-t-4 border-purple-200">
-                <button
-                  type="button"
-                  onClick={() => {
+                // Handle save
+                if (editingNote) {
+                  // Update note
+                  updateNote(editingNote.id, { title, content }).then((updatedNote) => {
+                    setNotes(notes.map(note => note.id === updatedNote.id ? updatedNote : note));
                     setShowCreateModal(false);
                     setEditingNote(null);
-                  }}
-                  className="px-8 py-4 text-xl font-bold text-red-600 border-2 border-red-300 rounded-xl hover:bg-red-50"
-                >
-                  ❌ Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 flex items-center gap-3 text-xl font-bold"
-                >
-                  🚀 {editingNote ? 'UPDATE NOTE' : 'CREATE NOTE'}
-                </button>
-              </div>
-            </form>
+                    toast.success('Note updated successfully');
+                  }).catch((error) => {
+                    toast.error('Failed to update note');
+                  });
+                } else {
+                  // Create note
+                  createNote({ title, content }).then((newNote) => {
+                    setNotes([newNote, ...notes]);
+                    setShowCreateModal(false);
+                    setEditingNote(null);
+                    toast.success('Note created successfully');
+                  }).catch((error) => {
+                    toast.error('Failed to create note');
+                  });
+                }
+              }}>
+                {/* TITLE INPUT */}
+                <div className="bg-white p-6 rounded-lg border-2 border-blue-200">
+                  <label htmlFor="title" className="block text-lg font-bold text-blue-800 mb-3">
+                    📝 NOTE TITLE
+                  </label>
+                  <input
+                    name="title"
+                    type="text"
+                    id="title"
+                    defaultValue={editingNote?.title || ''}
+                    className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                    placeholder="Enter your note title..."
+                    required
+                  />
+                </div>
+
+                {/* CONTENT TEXTAREA */}
+                <div className="bg-white p-6 rounded-lg border-2 border-green-200">
+                  <label htmlFor="content" className="block text-lg font-bold text-green-800 mb-3">
+                    📄 NOTE CONTENT
+                  </label>
+                  <textarea
+                    name="content"
+                    id="content"
+                    rows={10}
+                    defaultValue={editingNote?.content || ''}
+                    className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none text-base"
+                    placeholder="Write your note content here..."
+                    required
+                  />
+                </div>
+
+                {/* ACTIONS - FIXED AT BOTTOM */}
+                <div className="sticky bottom-0 bg-white p-6 border-t-2 border-gray-200 flex justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setEditingNote(null);
+                    }}
+                    className="px-6 py-3 text-gray-600 border-2 border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 font-medium flex items-center gap-2"
+                  >
+                    {editingNote ? 'Update Note' : 'Create Note'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
