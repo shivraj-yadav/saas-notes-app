@@ -3,10 +3,25 @@ import { getUserFromToken } from '../../../../../../lib/auth';
 import { prisma } from '../../../../../../lib/prisma';
 import { canUpgradeTenant } from '../../../../../../lib/subscription';
 
+// GET /api/tenants/[slug]/upgrade - Upgrade tenant to Pro plan (Admin only) - for browser testing
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  return handleUpgrade(request, params);
+}
+
 // POST /api/tenants/[slug]/upgrade - Upgrade tenant to Pro plan (Admin only)
 export async function POST(
   request: NextRequest,
   { params }: { params: { slug: string } }
+) {
+  return handleUpgrade(request, params);
+}
+
+async function handleUpgrade(
+  request: NextRequest,
+  params: { slug: string }
 ) {
   try {
     const token = request.cookies.get('auth-token')?.value;

@@ -82,12 +82,39 @@ export default function DashboardPage() {
     setShowCreateModal(true);
   };
 
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
     if (user?.role !== 'admin') {
       toast.error('Only admins can upgrade the subscription.');
       return;
     }
-    toast.success('Upgrade feature will be available in Module 7!');
+
+    try {
+      const response = await fetch(`/api/tenants/acme/upgrade`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Upgrade failed');
+      }
+
+      const result = await response.json();
+      toast.success('Successfully upgraded to Pro plan!');
+      
+      // Refresh user data to update subscription status
+      const userResponse = await fetch('/api/auth/me');
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser(userData.user);
+      }
+      
+    } catch (error) {
+      console.error('Upgrade error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to upgrade subscription');
+    }
   };
 
   const handleDeleteNote = async (noteId: string) => {
