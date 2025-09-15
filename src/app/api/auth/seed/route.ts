@@ -12,11 +12,11 @@ export async function POST() {
 
 async function seedDatabase() {
   try {
-    // Check if DATABASE_URL is available
-    if (!process.env.DATABASE_URL) {
+    // Check if database URL is available
+    if (!process.env.POSTGRES_PRISMA_URL && !process.env.DATABASE_URL) {
       return NextResponse.json({
         success: false,
-        message: 'Database not configured - DATABASE_URL environment variable missing',
+        message: 'Database not configured - POSTGRES_PRISMA_URL or DATABASE_URL environment variable missing',
       }, { status: 503 });
     }
 

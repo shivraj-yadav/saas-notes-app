@@ -11,8 +11,8 @@ const loginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if DATABASE_URL is available
-    if (!process.env.DATABASE_URL) {
+    // Check if database URL is available
+    if (!process.env.POSTGRES_PRISMA_URL && !process.env.DATABASE_URL) {
       return NextResponse.json({
         error: 'Database not configured - please seed the database first by visiting /api/auth/seed',
       }, { status: 503 });
