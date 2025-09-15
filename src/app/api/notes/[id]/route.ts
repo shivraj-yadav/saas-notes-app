@@ -73,6 +73,13 @@ export async function PUT(
 ) {
   const { id } = await params;
   try {
+    // Check if database URL is available
+    if (!process.env.POSTGRES_PRISMA_URL && !process.env.DATABASE_URL) {
+      return NextResponse.json({
+        error: 'Database not configured',
+      }, { status: 503 });
+    }
+
     const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
@@ -150,6 +157,19 @@ export async function PUT(
     return NextResponse.json({ note });
   } catch (error) {
     console.error('Update note error:', error);
+    
+    // More detailed error reporting
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { 
+          error: 'Failed to update note', 
+          details: error.message,
+          hint: 'Check if database is properly connected and user has permissions'
+        },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -164,6 +184,13 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
+    // Check if database URL is available
+    if (!process.env.POSTGRES_PRISMA_URL && !process.env.DATABASE_URL) {
+      return NextResponse.json({
+        error: 'Database not configured',
+      }, { status: 503 });
+    }
+
     const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
@@ -211,6 +238,19 @@ export async function DELETE(
     return NextResponse.json({ message: 'Note deleted successfully' });
   } catch (error) {
     console.error('Delete note error:', error);
+    
+    // More detailed error reporting
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { 
+          error: 'Failed to delete note', 
+          details: error.message,
+          hint: 'Check if database is properly connected and user has permissions'
+        },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
