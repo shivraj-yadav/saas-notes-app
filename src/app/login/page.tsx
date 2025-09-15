@@ -24,13 +24,14 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue, // ✅ use this to autofill values
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
-    
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -111,7 +112,7 @@ export default function LoginPage() {
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                   errors.email ? 'border-red-300' : 'border-gray-300'
                 }`}
-                placeholder="Enter your email !!!"
+                placeholder="Enter your email"
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -177,13 +178,9 @@ export default function LoginPage() {
                 transition={{ delay: 0.3 + index * 0.1 }}
                 className="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors cursor-pointer"
                 onClick={() => {
-                  // Auto-fill the form
-                  const emailInput = document.getElementById('email') as HTMLInputElement;
-                  const passwordInput = document.getElementById('password') as HTMLInputElement;
-                  if (emailInput && passwordInput) {
-                    emailInput.value = account.email;
-                    passwordInput.value = 'password';
-                  }
+                  // ✅ Autofill using react-hook-form
+                  setValue('email', account.email);
+                  setValue('password', 'password');
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -193,11 +190,13 @@ export default function LoginPage() {
                       {account.role} • {account.tenant} Corporation
                     </p>
                   </div>
-                  <div className={`px-2 py-1 rounded text-xs font-medium ${
-                    account.role === 'Admin' 
-                      ? 'bg-blue-600 text-blue-100' 
-                      : 'bg-green-600 text-green-100'
-                  }`}>
+                  <div
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      account.role === 'Admin' 
+                        ? 'bg-blue-600 text-blue-100' 
+                        : 'bg-green-600 text-green-100'
+                    }`}
+                  >
                     {account.role}
                   </div>
                 </div>
