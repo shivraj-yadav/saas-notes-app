@@ -104,7 +104,7 @@ export async function PUT(
     // Check if note exists and belongs to user's tenant
     const existingNote = await prisma.note.findFirst({
       where: {
-        id: params.id,
+        id: id,
         tenantId: user.tenantId, // Tenant isolation
       },
     });
@@ -184,7 +184,7 @@ export async function DELETE(
     // Check if note exists and belongs to user's tenant
     const existingNote = await prisma.note.findFirst({
       where: {
-        id: params.id,
+        id: id,
         tenantId: user.tenantId, // Tenant isolation
       },
     });
