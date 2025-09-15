@@ -2,7 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import bcrypt from 'bcryptjs';
 
+export async function GET() {
+  return seedDatabase();
+}
+
 export async function POST() {
+  return seedDatabase();
+}
+
+async function seedDatabase() {
   try {
     // Check if DATABASE_URL is available
     if (!process.env.DATABASE_URL) {
