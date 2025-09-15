@@ -231,24 +231,7 @@ NEXTAUTH_SECRET="your-nextauth-secret"
 - **Health Monitoring**: Endpoint for automated testing and monitoring
 - **Security Implementation**: Secure authentication and data protection
 
-## 🧪 Testing
 
-### Manual Testing
-1. **Authentication Flow**
-   ```bash
-   # Test login with different tenant users
-   curl -X POST https://your-app.vercel.app/api/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{"email": "admin@acme.test", "password": "password"}'
-   ```
-
-2. **Multi-Tenant Isolation**
-   - Login as Acme user → Create notes → Verify Globex users cannot see them
-   - Test subscription limits (Free plan: 3 notes max)
-
-3. **Role-Based Access**
-   - Admin users: Can invite users and upgrade subscriptions
-   - Member users: Can only manage their own notes
 
 ### API Testing
 ```bash
@@ -283,13 +266,6 @@ curl -X POST https://your-app.vercel.app/api/notes \
 
 ### Debug Mode
 Enable detailed logging by setting `NODE_ENV=development` in your environment.
-
-## 🚀 Performance Metrics
-
-- **Page Load Time**: < 2s (First Contentful Paint)
-- **API Response Time**: < 200ms average
-- **Database Query Time**: < 50ms average
-- **Lighthouse Score**: 95+ (Performance, Accessibility, Best Practices)
 
 
 ## 📞 Support
