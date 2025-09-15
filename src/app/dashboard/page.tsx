@@ -525,7 +525,7 @@ export default function DashboardPage() {
             {/* NEW HEADER */}
             <div className="flex items-center justify-between p-8 border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <h2 className="text-2xl font-bold text-blue-900">
-                ✨ NEW MODAL ✨ {editingNote ? 'EDIT YOUR NOTE' : 'CREATE NEW NOTE'}
+                 {editingNote ? 'EDIT ' : 'CREATE '}
               </h2>
               <button
                 onClick={() => {
@@ -577,7 +577,7 @@ export default function DashboardPage() {
                 {/* TITLE INPUT */}
                 <div className="bg-white p-6 rounded-lg border-2 border-blue-200">
                   <label htmlFor="title" className="block text-lg font-bold text-blue-800 mb-3">
-                    📝 NOTE TITLE
+                    📝 TITLE
                   </label>
                   <input
                     name="title"
@@ -593,7 +593,7 @@ export default function DashboardPage() {
                 {/* CONTENT TEXTAREA */}
                 <div className="bg-white p-6 rounded-lg border-2 border-green-200">
                   <label htmlFor="content" className="block text-lg font-bold text-green-800 mb-3">
-                    📄 NOTE CONTENT
+                    📄  CONTENT
                   </label>
                   <textarea
                     name="content"
