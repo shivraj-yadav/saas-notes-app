@@ -11,8 +11,9 @@ const updateNoteSchema = z.object({
 // GET /api/notes/[id] - Get a specific note
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const token = request.cookies.get('auth-token')?.value;
     
@@ -33,7 +34,7 @@ export async function GET(
 
     const note = await prisma.note.findFirst({
       where: {
-        id: params.id,
+        id: id,
         tenantId: user.tenantId, // Tenant isolation
       },
       include: {
@@ -68,8 +69,9 @@ export async function GET(
 // PUT /api/notes/[id] - Update a note
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const token = request.cookies.get('auth-token')?.value;
     
@@ -131,7 +133,7 @@ export async function PUT(
     }
 
     const note = await prisma.note.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         user: {
@@ -158,8 +160,9 @@ export async function PUT(
 // DELETE /api/notes/[id] - Delete a note
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const token = request.cookies.get('auth-token')?.value;
     
@@ -202,7 +205,7 @@ export async function DELETE(
     }
 
     await prisma.note.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ message: 'Note deleted successfully' });
