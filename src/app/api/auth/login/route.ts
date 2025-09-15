@@ -11,6 +11,13 @@ const loginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        error: 'Database not configured - please seed the database first by visiting /api/auth/seed',
+      }, { status: 503 });
+    }
+
     const body = await request.json();
     const { email, password } = loginSchema.parse(body);
 
@@ -24,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid credentials - user not found. Please seed the database first by visiting /api/auth/seed' },
         { status: 401 }
       );
     }
@@ -33,7 +40,7 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid credentials - incorrect password' },
         { status: 401 }
       );
     }
@@ -78,6 +85,19 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Login error:', error);
+    
+    // More detailed error reporting
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { 
+          error: 'Login failed', 
+          details: error.message,
+          hint: 'If this is a database error, please visit /api/auth/seed to initialize the database'
+        },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
