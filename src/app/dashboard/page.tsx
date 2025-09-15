@@ -218,7 +218,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl font-bold text-gray-900 mb-2"
           >
-            My Notes shiv
+            My Notes
           </motion.h1>
           <p className="text-gray-600">
             {user.tenant.subscriptionPlan === 'free' 
