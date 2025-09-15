@@ -10,6 +10,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "NotesApp - Multi-Tenant SaaS Platform",
   description: "Secure, scalable note-taking solution for teams with tenant isolation and role-based access control.",
+  icons: {
+    icon: "/notepad.png",
+    shortcut: "/notepad.png",
+    apple: "/notepad.png",
+  },
 };
 
 export default function RootLayout({
