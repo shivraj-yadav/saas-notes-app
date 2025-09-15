@@ -222,7 +222,7 @@ export default function DashboardPage() {
           </motion.h1>
           <p className="text-gray-600">
             {user.tenant.subscriptionPlan === 'free' 
-              ? `${notes.length}/3 notes used • Upgrade to Pro for unlimited notes`
+              ? `${notes.length}/3 notes used • Upgrade to Pro Max for unlimited notes`
               : 'Unlimited notes available'
             }
           </p>
