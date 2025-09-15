@@ -31,28 +31,27 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock authentication logic
-      const validAccounts = [
-        'admin@acme.test',
-        'user@acme.test',
-        'admin@globex.test',
-        'user@globex.test'
-      ];
-      
-      if (validAccounts.includes(data.email) && data.password === 'password') {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
         toast.success('Login successful! Redirecting to dashboard...');
-        // In a real app, you would redirect to dashboard here
         setTimeout(() => {
           window.location.href = '/dashboard';
-        }, 1500);
+        }, 1000);
       } else {
-        toast.error('Invalid credentials. Please check your email and password.');
+        toast.error(result.error || 'Invalid credentials. Please check your email and password.');
       }
-    } catch {
+    } catch (error) {
+      console.error('Login error:', error);
       toast.error('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
