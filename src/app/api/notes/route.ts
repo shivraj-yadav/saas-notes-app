@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken } from '../../../../lib/auth';
 import { prisma } from '../../../../lib/prisma';
+import { checkSubscriptionLimits } from '../../../../lib/subscription';
 import { z } from 'zod';
 
 const createNoteSchema = z.object({
@@ -104,6 +105,20 @@ export async function POST(request: NextRequest) {
     }
 
     const { title, content } = validationResult.data;
+
+    // Check subscription limits before creating note
+    const subscriptionCheck = await checkSubscriptionLimits(user.tenantId, 'create_note');
+    if (!subscriptionCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Subscription limit exceeded',
+          message: subscriptionCheck.reason,
+          currentCount: subscriptionCheck.currentCount,
+          limit: subscriptionCheck.limit,
+        },
+        { status: 403 }
+      );
+    }
 
     // Create note with tenant isolation
     const note = await prisma.note.create({
