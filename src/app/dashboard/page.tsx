@@ -14,7 +14,8 @@ import {
   Edit, 
   Trash2,
   Calendar,
-  Loader2
+  Loader2,
+  UserPlus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Note, getNotes, deleteNote, createNote, updateNote } from '../../../lib/notes';
@@ -39,6 +40,7 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Fetch user data and notes on component mount
@@ -151,6 +153,31 @@ export default function DashboardPage() {
     setShowCreateModal(false);
   };
 
+  const handleInviteUser = async (inviteData: { email: string; name: string; role: string }) => {
+    try {
+      const response = await fetch('/api/users/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inviteData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to invite user');
+      }
+
+      const result = await response.json();
+      toast.success(`User ${inviteData.email} invited successfully! Default password: password`);
+      setShowInviteModal(false);
+      
+    } catch (error) {
+      console.error('Invite user error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to invite user');
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -195,9 +222,20 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Admin Actions */}
+            {user.role === 'admin' && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="bg-gradient-to-r from-green-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-teal-700 transition-colors text-sm font-medium flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite User
+              </button>
+            )}
+
             {/* Subscription Status */}
             <div className="hidden md:flex items-center gap-2">
-              {user.tenant.subscriptionPlan === 'free' && (
+              {user.tenant.subscriptionPlan === 'free' && user.role === 'admin' && (
                 <button
                   onClick={handleUpgrade}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
@@ -377,6 +415,108 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* User Invitation Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[9999]">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md border-4 border-green-500">
+            <div className="flex items-center justify-between p-6 border-b-2 border-green-200 bg-gradient-to-r from-green-50 to-teal-50">
+              <h2 className="text-xl font-bold text-green-900 flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                Invite New User
+              </h2>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="text-red-500 hover:text-red-700 text-xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form className="p-6 space-y-4" onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              const email = formData.get('email') as string;
+              const name = formData.get('name') as string;
+              const role = formData.get('role') as string;
+              
+              if (!email || !name || !role) {
+                toast.error('Please fill in all fields');
+                return;
+              }
+
+              handleInviteUser({ email, name, role });
+            }}>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  id="email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="user@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  name="name"
+                  type="text"
+                  id="name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  name="role"
+                  id="role"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                >
+                  <option value="">Select a role</option>
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> The invited user will receive the default password: <code className="bg-blue-200 px-1 rounded">password</code>
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(false)}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-teal-700 flex items-center gap-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Send Invitation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* NEW WORKING MODAL - FORCE CACHE REFRESH */}
       {(showCreateModal || editingNote) && (
